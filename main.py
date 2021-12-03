@@ -188,6 +188,8 @@ def main_worker(gpu, ngpus_per_node, args):
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
 
+    #todo: each task should have a different default architecture
+
     # create model
     if args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
@@ -320,8 +322,9 @@ def main_worker(gpu, ngpus_per_node, args):
     # define loss function and optimizer
     # todo: add loss_fn to args
     loss_fn = task.default_loss_fn()
-    if not args.cpu:
-        loss_fn = loss_fn.cuda(args.gpu) 
+    if loss_fn is not None:
+        if not args.cpu:
+            loss_fn = loss_fn.cuda(args.gpu) 
 
     # todo: add metrics_fn to args
     metrics_fn = task.default_metrics_fn()
@@ -398,7 +401,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
     batch_times = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
-    metrics = AverageMeter(metrics_fn.name(), ':6.2f')
+    metrics = AverageMeter(metrics_fn.name, ':6.2f')
     progress = ProgressMeter(
         len(train_loader),
         [batch_times, data_time, losses, metrics],
@@ -410,6 +413,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         # measure data loading time
         data_time.update(time.time() - end)
         batch = task.to_device(batch, device, args.gpu)
+        batch_size = task.get_batch_size(batch) 
         # optional: scale input
         # todo: clean this up and make it more generic
         # todo: perhaps add args.process_input or add this as a transformation
@@ -419,17 +423,16 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
                 images = torch.nn.functional.interpolate(images, **args.scale_input)
 
         # compute output
-        input, kwargs = task.get_input(batch)
-        output = model(input, **kwargs)
+        input, kw_inputs = task.get_input(batch)
+        output = model(**kw_inputs)
         loss = task.get_loss(output, batch, loss_fn)
 
         # measure accuracy and record loss
         target = task.get_target(batch)
         #todo: add argument for metrics
         metric = task.get_metrics(output, target, metrics_fn)
-        metric = [m.item() for m in metric]
-        losses.update(loss.item(), input.size(0))
-        metrics.update(metric, input.size(0))
+        losses.update(loss.item(), batch_size)
+        metrics.update(metric, batch_size)
 
         # compute gradient and do SGD step
         optimizer.zero_grad()

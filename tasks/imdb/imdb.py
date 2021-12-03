@@ -62,12 +62,30 @@ def to_device(batch, device, gpu_id):
     # todo: deal with gpu_id
     return {k: v.to(device) for k, v in batch.items()}
 
+def get_batch_size(batch):
+    return len(batch["labels"])
+
 def get_input(batch):
-    return batch
+    dummy = 1
+    return dummy, batch
+
+def get_target(batch):
+    return batch["labels"]
+
+def default_loss_fn():
+    return None
 
 def get_loss(output, batch, loss_fn):
     del loss_fn # not using it
     return output.loss
+
+def default_metrics_fn():
+    return datasets.load_metric("accuracy")
+
+def get_metrics(output, target, metrics_fn):
+    logits = output.logits
+    predictions = torch.argmax(logits, dim=-1)
+    return list(metrics_fn.compute(predictions=predictions, references=target).values())
 
 metrics = "todo"
 

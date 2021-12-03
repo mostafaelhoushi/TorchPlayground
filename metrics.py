@@ -4,6 +4,8 @@ import torch
 # metric = accuracy(topk=(1,))
 # metric_val = metric(output, target)
 
+# todo: get ideas from hugging face metrics: https://huggingface.co/docs/datasets/using_metrics.html
+
 def accuracy(topk=(1,)):
     return TopK(topk)
 

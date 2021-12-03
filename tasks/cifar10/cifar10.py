@@ -3,6 +3,7 @@ import torch
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 
+import metrics
 import tasks.cifar10.models as models
 
 model_names = sorted(name for name in models.__dict__
@@ -87,23 +88,17 @@ def get_target(batch):
     return target
 
 def default_loss_fn():
-    return nn.CrossEntropyLoss()
+    return torch.nn.CrossEntropyLoss()
 
 def get_loss(output, batch, loss_fn):
     (_, target) = batch
-    return torch.loss_fn(output, target)
+    return loss_fn(output, target)
 
-def default_metrics():
-    return topk(1,5)
+def default_metrics_fn():
+    return metrics.accuracy(topk=(1,5))
 
-
-def get_metrics(output, target, **kwargs):
-    metrics_dict = dict()
-    if "topk" in kwargs:
-        acc1, acc5 = metrics.accuracy(output, target, kwargs["topk"])
-        metrics_dict["acc1"] = acc1
-        metrics_dict["acc5"] = acc5
-    return metrics_dict
+def get_metrics(output, target, metrics_fn):
+    return metrics_fn(output, target)
 
 idx2label = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 

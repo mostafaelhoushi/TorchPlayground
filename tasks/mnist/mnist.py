@@ -79,6 +79,7 @@ def default_metrics_fn():
     return metrics.accuracy(topk=(1,))
 
 def get_metrics(output, target, metrics_fn):
-    return metrics_fn(output, target)
+    metrics = metrics_fn(output, target)
+    return [m.item() for m in metrics]
 
 idx2label = [str(k) for k in range(10)]
