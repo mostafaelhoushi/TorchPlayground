@@ -79,6 +79,14 @@ def to_device(batch, device, gpu_id):
         target = target.cuda(gpu_id, non_blocking=True)
     return (images, target)
 
+def get_batch_size(batch):
+    (images, _) = batch
+    return images.shape[0]
+
+def forward(model, batch):
+    (images, _) = batch
+    return model(images)
+
 def get_input(batch):
     (images, _) = batch
     return images, {}
@@ -98,7 +106,8 @@ def default_metrics_fn():
     return metrics.accuracy(topk=(1,5))
 
 def get_metrics(output, target, metrics_fn):
-    return metrics_fn(output, target)
+    metrics = metrics_fn(output, target)
+    return [m.item() for m in metrics]
 
 idx2label = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 

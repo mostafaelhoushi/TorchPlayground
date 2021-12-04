@@ -64,9 +64,9 @@ def get_batch_size(batch):
     (images, _) = batch
     return images.shape[0]
 
-def get_input(batch):
+def forward(model, batch):
     (images, _) = batch
-    return images, {}
+    return model(images)
 
 def get_target(batch):
     (_, target) = batch
