@@ -381,7 +381,7 @@ def main_worker(gpu, ngpus_per_node, args):
             lr_scheduler.step()
 
             # evaluate on validation set
-            metrics = validate(val_loader, task, model, loss_fn, metrics_fn, args)
+            metrics = validate(val_loader, task, model, loss_fn, metrics_fn, device, args)
 
             # remember best acc and save checkpoint
             acc1 = metrics[0]
@@ -424,8 +424,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
                 images = torch.nn.functional.interpolate(images, **args.scale_input)
 
         # compute output
-        input, kw_inputs = task.get_input(batch)
-        output = model(**kw_inputs)
+        output = task.forward(model, batch)
         loss = task.get_loss(output, batch, loss_fn)
 
         # measure accuracy and record loss
@@ -450,10 +449,11 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         if args.dry_run:
             break
 
-def validate(val_loader, task, model, loss_fn, metrics_fn, args):
+
+def validate(val_loader, task, model, loss_fn, metrics_fn, device, args):
     batch_times = AverageMeter('Time', ':6.3f', Summary.NONE)
     losses = AverageMeter('Loss', ':.4e', Summary.NONE)
-    metrics = AverageMeter(metrics_fn.name(), ':6.2f', Summary.AVERAGE)
+    metrics = AverageMeter(metrics_fn.name, ':6.2f', Summary.AVERAGE)
     progress = ProgressMeter(
         len(val_loader),
         [batch_times, losses, metrics],
@@ -466,24 +466,19 @@ def validate(val_loader, task, model, loss_fn, metrics_fn, args):
         end = time.time()
         for i, batch in enumerate(val_loader):
             #todo: make this generic for different tasks
-            (samples, target) = batch
-            if args.gpu is not None and not args.cpu:
-                samples = samples.cuda(args.gpu, non_blocking=True)
-            if torch.cuda.is_available() and not args.cpu:
-                target = target.cuda(args.gpu, non_blocking=True)
+            batch = task.to_device(batch, device, args.gpu)
+            batch_size = task.get_batch_size(batch) 
 
             # compute output
-            input, kwargs = task.get_input(batch)
-            output = model(input, **kwargs)
+            output = task.forward(model, batch)
             loss = task.get_loss(output, batch, loss_fn)
 
             # measure accuracy and record loss
             target = task.get_target(batch)
             #todo: add argument for metrics
             metric = task.get_metrics(output, target, metrics_fn)
-            metric = [m.item() for m in metric]
-            losses.update(loss.item(), samples.size(0))
-            metrics.update(metric, samples.size(0))
+            losses.update(loss.item(), batch_size)
+            metrics.update(metric, batch_size)
 
             # measure elapsed time
             batch_times.update(time.time() - end)

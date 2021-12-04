@@ -65,9 +65,9 @@ def to_device(batch, device, gpu_id):
 def get_batch_size(batch):
     return len(batch["labels"])
 
-def get_input(batch):
-    dummy = 1
-    return dummy, batch
+# TODO: try the solution again in StackOverflow?
+def forward(model, batch):
+    return model(**batch)
 
 def get_target(batch):
     return batch["labels"]

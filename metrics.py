@@ -35,5 +35,6 @@ class TopK:
             return res
 
     # todo: overwrite __name__(self)
+    @property
     def name(self):
         return "/".join([f"Acc@{i}" for i in self._topk])

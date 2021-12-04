@@ -60,6 +60,10 @@ def to_device(batch, device, gpu_id):
         target = target.cuda(gpu_id, non_blocking=True)
     return (images, target)
 
+def get_batch_size(batch):
+    (images, _) = batch
+    return images.shape[0]
+
 def get_input(batch):
     (images, _) = batch
     return images, {}
