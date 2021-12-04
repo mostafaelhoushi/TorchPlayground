@@ -28,6 +28,7 @@ import torch.utils.data.distributed
 from torch.autograd import Variable
 
 from convert import convert, register_forward_hook
+import conversions
 
 
 parser = argparse.ArgumentParser(description='Effect of stride testing on Imagenet')
