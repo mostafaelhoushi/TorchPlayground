@@ -121,7 +121,8 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'multi node data parallel training')
 parser.add_argument('--dump-mean', dest='dump_mean', action='store_true',
                     help='log mean of each layer')
-#todo: add dry-run argument
+parser.add_argument('--dry-run', action='store_true', default=False,
+                    help='quickly check a single pass')
 
 def image_loader(image_name, preprocess, device="cpu"):
     """load image, returns cuda tensor"""
@@ -446,6 +447,8 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         if i % args.print_freq == 0:
             progress.display(i)
 
+        if args.dry_run:
+            break
 
 def validate(val_loader, task, model, loss_fn, metrics_fn, args):
     batch_times = AverageMeter('Time', ':6.3f', Summary.NONE)
@@ -488,6 +491,9 @@ def validate(val_loader, task, model, loss_fn, metrics_fn, args):
 
             if i % args.print_freq == 0:
                 progress.display(i)
+
+            if args.dry_run:
+                break
 
         progress.display_summary()
 
