@@ -18,24 +18,27 @@ train_transforms = "todo"
 
 validation_transforms = "todo"
 
-raw_datasets = datasets.load_dataset("imdb") # todo: generalize this
-tokenizer = transformers.AutoTokenizer.from_pretrained("bert-base-cased") # todo: generalize this
-
-def tokenize_function(examples):
-    return tokenizer(examples["text"], padding="max_length", truncation=True)
-
-tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
-tokenized_datasets = tokenized_datasets.remove_columns(["text"])
-tokenized_datasets = tokenized_datasets.rename_column("label", "labels")
-tokenized_datasets.set_format("torch")
-
 preprocess = "todo" # todo validation_transforms
 
+def load_tokenized_datasets():
+    raw_datasets = datasets.load_dataset("imdb", data_dir=data_dir) # todo: generalize this
+    tokenizer = transformers.AutoTokenizer.from_pretrained("bert-base-cased") # todo: generalize this
+
+    def tokenize_function(examples):
+        return tokenizer(examples["text"], padding="max_length", truncation=True)
+
+    tokenized_datasets = raw_datasets.map(tokenize_function, batched=True)
+    tokenized_datasets = tokenized_datasets.remove_columns(["text"])
+    tokenized_datasets = tokenized_datasets.rename_column("label", "labels")
+    tokenized_datasets.set_format("torch")
+    return tokenized_datasets
 
 def train_dataset(data_dir): # todo: use data_dir
+    tokenized_datasets = load_tokenized_datasets(data_dir)
     return tokenized_datasets["train"]
 
 def validation_dataset(data_dir): # todo: use data_dir
+    tokenized_datasets = load_tokenized_datasets(data_dir)
     return tokenized_datasets["test"]
 
 def default_epochs():
