@@ -69,16 +69,10 @@ function imagenet() {
   python main.py --task imagenet --arch resnet18 --dry-run --epochs 1 --data sample/ || error "imagenet example failed"
 }
 
-function imdb() {
-  start
-  python main.py --task imdb --arch prajjwal1/bert-tiny --dry-run --epochs 1 || error "imdb example failed"
-}
-
 function run_all() {
   imagenet
   mnist
   cifar10
-  imdb
 }
 
 # by default, run all examples
