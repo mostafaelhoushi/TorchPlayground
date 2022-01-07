@@ -31,7 +31,7 @@ from convert import convert, register_forward_hook
 
 
 parser = argparse.ArgumentParser(description='Effect of stride testing on Imagenet')
-parser.add_argument('--task', default='cifar10', choices=['imagenet', 'cifar10', 'mnist', 'imdb'], # todo: make this generic
+parser.add_argument('--task', default='cifar10', choices=['imagenet', 'cifar10', 'mnist', 'imdb', 'squad'], # todo: make this generic
                     help='dataset to train/evaluate on and to determine the architecture variant')
 parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     # todo: check if model belongs to task, OR is on torchhub/huggingface/timm, OR is a path
