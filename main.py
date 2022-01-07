@@ -414,6 +414,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         # measure data loading time
         data_time.update(time.time() - end)
         batch = task.to_device(batch, device, args.gpu)
+        input, target = batch
         batch_size = task.get_batch_size(batch) 
         # optional: scale input
         # todo: clean this up and make it more generic
@@ -424,13 +425,15 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
                 images = torch.nn.functional.interpolate(images, **args.scale_input)
 
         # compute output
-        output = task.forward(model, batch)
-        loss = task.get_loss(output, batch, loss_fn)
+        output = model(input)
+        loss = loss_fn(output, target)
 
-        # measure accuracy and record loss
-        target = task.get_target(batch)
+        # measure accuracy
         #todo: add argument for metrics
-        metric = task.get_metrics(output, target, metrics_fn)
+        metric = metrics_fn(output, target)
+        metric = [m.item() for m in metric]
+
+        # record loss and metric
         losses.update(loss.item(), batch_size)
         metrics.update(metric, batch_size)
 
@@ -467,16 +470,19 @@ def validate(val_loader, task, model, loss_fn, metrics_fn, device, args):
         for i, batch in enumerate(val_loader):
             #todo: make this generic for different tasks
             batch = task.to_device(batch, device, args.gpu)
+            input, target = batch
             batch_size = task.get_batch_size(batch) 
 
             # compute output
-            output = task.forward(model, batch)
-            loss = task.get_loss(output, batch, loss_fn)
+            output = model(input)
+            loss = loss_fn(output, target)
 
-            # measure accuracy and record loss
-            target = task.get_target(batch)
+            # measure accuracy
             #todo: add argument for metrics
-            metric = task.get_metrics(output, target, metrics_fn)
+            metric = metrics_fn(output, target)
+            metric = [m.item() for m in metric]
+
+            # record loss and metric
             losses.update(loss.item(), batch_size)
             metrics.update(metric, batch_size)
 
