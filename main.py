@@ -206,40 +206,41 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # apply conversions
     if args.svd_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Linear, conversions.tensor_decomposition.svd_decompose_linear, index_start=args.layer_start, index_end=args.layer_end, **args.svd_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Linear, tensor_decomposition.svd_decompose_linear, index_start=args.layer_start, index_end=args.layer_end, **args.svd_decompose)
     if args.channel_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.tensor_decomposition.channel_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.channel_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.channel_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.channel_decompose)
     if args.spatial_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.tensor_decomposition.spatial_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.spatial_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.spatial_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.spatial_decompose)
     if args.depthwise_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.tensor_decomposition.depthwise_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.depthwise_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.depthwise_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.depthwise_decompose)
     if args.tucker_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.tensor_decomposition.tucker_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.tucker_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.tucker_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.tucker_decompose)
     if args.cp_decompose:
-        importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.tensor_decomposition.cp_decompose_conv_other, index_start=args.layer_start, index_end=args.layer_end, **args.cp_decompose)
+        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
+        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.cp_decompose_conv_other, index_start=args.layer_start, index_end=args.layer_end, **args.cp_decompose)
 
     if args.apot:
-        importlib.import_module(f"conversions.apot")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.apot.convert, index_start=args.layer_start, index_end=args.layer_end, **args.apot)
+        apot = importlib.import_module(f"conversions.apot")
+        model, _ = convert(model, torch.nn.Conv2d, apot.convert, index_start=args.layer_start, index_end=args.layer_end, **args.apot)
     if args.haq:
-        importlib.import_module(f"conversions.haq")
-        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), conversions.haq.convert, index_start=args.layer_start, index_end=args.layer_end, **args.haq)
+        haq = importlib.import_module(f"conversions.haq")
+        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), haq.convert, index_start=args.layer_start, index_end=args.layer_end, **args.haq)
     if args.deepshift:
-        importlib.import_module(f"conversions.deepshift")
-        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), conversions.deepshift.convert_to_shift.convert, index_start=args.layer_start, index_end=args.layer_end, **args.deepshift)
+        deepshift = importlib.import_module(f"conversions.deepshift")
+        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), deepshift.convert_to_shift.convert, index_start=args.layer_start, index_end=args.layer_end, **args.deepshift)
 
     if args.convup:
-        importlib.import_module(f"conversions.convup")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.convup.ConvUp, index_start=args.layer_start, index_end=args.layer_end, **args.convup)
+        convup = importlib.import_module(f"conversions.convup")
+        model, _ = convert(model, torch.nn.Conv2d, convup.ConvUp, index_start=args.layer_start, index_end=args.layer_end, **args.convup)
     if args.strideout:
-        importlib.import_module(f"conversions.strideout")
-        model, _ = convert(model, torch.nn.Conv2d, conversions.strideout.StrideOut, index_start=args.layer_start, index_end=args.layer_end, **args.strideout)
+        strideout = importlib.import_module(f"conversions.strideout")
+        model, _ = convert(model, torch.nn.Conv2d, strideout.StrideOut, index_start=args.layer_start, index_end=args.layer_end, **args.strideout)
+    ## todo: add dilate instead of convup
 
     if args.dump_mean:
         register_forward_hook(model, print_mean)
