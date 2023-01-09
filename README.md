@@ -42,6 +42,8 @@ python main.py --data-dir <path to imagenet>
 ```
 
 # Converting Model
+<details>
+<summary><b>Quantization</b></summary>
 - To convert convolution to APoT 5-bit quantized convolution:
 ```
 python main.py -i grumpy.jpg --apot '{"bit": 5}'
@@ -56,12 +58,29 @@ python main.py -i grumpy.jpg --haq '{"w_bit": 5, "a_bit": 5}'
 ```
 python main.py --deepshift '{"shift_type": "PS"}'
 ```
+</details>
 
-- To increase stride of convolution and upsample
+<details>
+<summary><b>Pruning</b></summary>
+
+- Unstructured pruning with 90% sparsity based on L1 norm:
 ```
-python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
+python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "l1_unstructured"}'
 ```
 
+- Structured pruning with 50% filters removed based on L0 norm:
+```
+python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "ln_structured", "n": 0}'
+```
+
+- Global unstructured pruning with 90% sparsity based on L1 norm:
+```
+python main.py --task cifar10 --epochs 200 --global-prune '{"amount": 0.9, "pruning_method": "L1Unstructured"}'
+```
+</details>
+
+<details>
+<summary><b>Tensor Decomposition</b></summary>
 - To perform Tucker decomposition
 ```
 python main.py --data-dir ~/datasets/imagenet --tucker-decompose '{"ranks":[20,20]}' --task imagenet --pretrained True --arch resnet18 --layer-start 1
@@ -71,8 +90,17 @@ python main.py --data-dir ~/datasets/imagenet --tucker-decompose '{"ranks":[20,2
 ```
 python main.py --data-dir ~/datasets/imagenet --depthwise-decompose '{"threshold":0.3}' --task imagenet --pretrained True --arch resnet18 --layer-start 1
 ```
+</details>
+
+<details>
+<summary><b>Other</b></summary>
+- To increase stride of convolution and upsample
+```
+python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
+```
 
 - To downsize every other epoch
 ```
 python main.py --data-dir ~/datasets/ --scale-input '{"scale_factor":0.25, "recompute_scale_factor":true}'  --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
 ```
+</details>
