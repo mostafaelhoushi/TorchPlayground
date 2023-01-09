@@ -37,6 +37,8 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     # todo: check if model belongs to task, OR is on torchhub/huggingface/timm, OR is a path
                     help='model architecture (default: resnet18)')
 
+parser.add_argument('--prune', default=None, type=json.loads, help='prunes conv2d or linear.')
+
 parser.add_argument('--apot', default=None, type=json.loads, help='convert conv2d to APoT quantized convolution, pass argument as dict of arguments')
 parser.add_argument('--deepshift', default=None, type=json.loads, help='convert conv2d to DeepShift-PS quantized convolution, pass argument as dict of arguments')
 parser.add_argument('--haq', default=None, type=json.loads, help='convert conv2d and linear to HAQ quantized convolution, pass argument as dict of arguments')
@@ -205,6 +207,11 @@ def main_worker(gpu, ngpus_per_node, args):
         args.conversion_epochs = range(args.conversion_epoch_start, args.conversion_epoch_end+1, args.conversion_epoch_step)
 
     # apply conversions
+    if args.prune:
+        prune = importlib.import_module(f"conversions.prune")
+        model, _ = convert(model, torch.nn.Linear, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
+        model, _ = convert(model, torch.nn.Conv2d, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
+
     if args.svd_decompose:
         tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
         model, _ = convert(model, torch.nn.Linear, tensor_decomposition.svd_decompose_linear, index_start=args.layer_start, index_end=args.layer_end, **args.svd_decompose)
