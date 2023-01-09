@@ -72,6 +72,11 @@ python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "l1_
 ```
 python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "ln_structured", "n": 0}'
 ```
+
+- Global unstructured pruning with 90% sparsity based on L1 norm:
+```
+python main.py --task cifar10 --epochs 200 --global-prune '{"amount": 0.9, "pruning_method": "L1Unstructured"}'
+```
 </details>
 
 <details>

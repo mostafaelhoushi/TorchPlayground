@@ -38,6 +38,7 @@ parser.add_argument('-a', '--arch', metavar='ARCH', default='resnet18',
                     help='model architecture (default: resnet18)')
 
 parser.add_argument('--prune', default=None, type=json.loads, help='prunes conv2d or linear.')
+parser.add_argument('--global-prune', default=None, type=json.loads, help='prunes conv2d or linear layers based on global criteria.')
 
 parser.add_argument('--apot', default=None, type=json.loads, help='convert conv2d to APoT quantized convolution, pass argument as dict of arguments')
 parser.add_argument('--deepshift', default=None, type=json.loads, help='convert conv2d to DeepShift-PS quantized convolution, pass argument as dict of arguments')
@@ -211,6 +212,9 @@ def main_worker(gpu, ngpus_per_node, args):
         prune = importlib.import_module(f"conversions.prune")
         model, _ = convert(model, torch.nn.Linear, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
         model, _ = convert(model, torch.nn.Conv2d, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
+    if args.global_prune:
+        global_prune = importlib.import_module(f"conversions.global_prune")
+        model = global_prune.convert(model, (torch.nn.Linear, torch.nn.Conv2d), index_start=args.layer_start, index_end=args.layer_end, **args.global_prune)
 
     if args.svd_decompose:
         tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")

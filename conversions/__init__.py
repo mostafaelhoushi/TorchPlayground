@@ -5,3 +5,4 @@ from . import convup
 from . import haq
 from . import strideout
 from . import prune
+from . import global_prune
