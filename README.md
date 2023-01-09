@@ -67,6 +67,11 @@ python main.py --deepshift '{"shift_type": "PS"}'
 ```
 python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "l1_unstructured"}'
 ```
+
+- Structured pruning with 50% filters removed based on L0 norm:
+```
+python main.py --task cifar10 --epochs 200 --prune '{"amount": 0.9, "type": "ln_structured", "n": 0}'
+```
 </details>
 
 <details>
