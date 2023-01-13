@@ -101,6 +101,6 @@ python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
 
 - To downsize every other epoch
 ```
-python main.py --data-dir ~/datasets/ --scale-input '{"scale_factor":0.25, "recompute_scale_factor":true}'  --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
+python main.py --data-dir ~/datasets/ --scale-input '{"size":[30,30]}' --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
 ```
 </details>
