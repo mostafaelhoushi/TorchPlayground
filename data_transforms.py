@@ -8,8 +8,8 @@ def transform_data(batch, args):
     input_transforms = []
     target_transforms = []
 
-    if args.scale_input:
-        input_transforms.append(torchvision.transforms.Resize(**args.scale_input))
+    if args.resize_input:
+        input_transforms.append(torchvision.transforms.Resize(**args.resize_input))
     
     input_transforms = torchvision.transforms.Compose(input_transforms)
     input = input_transforms(input)

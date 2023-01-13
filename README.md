@@ -20,7 +20,7 @@ python main.py --task <imagenet | cifar10 | mnist> --arch <model>
 
 There are more options that can be listed by running `python main.py --help`
 
-# Without Converting Model
+# Without Transformations
 - To infer image:
 ```
 python main.py --task cifar10 -i grumpy.jpg
@@ -41,7 +41,7 @@ python main.py --task imagenet --evaluate --data-dir <path to imagenet>
 python main.py --data-dir <path to imagenet>
 ```
 
-# Converting Model
+# With Model Transformations
 <details>
 <summary><b>Quantization</b></summary>
 - To convert convolution to APoT 5-bit quantized convolution:
@@ -98,9 +98,19 @@ python main.py --data-dir ~/datasets/imagenet --depthwise-decompose '{"threshold
 ```
 python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
 ```
+</details>
+
+# With Data Transformations
+
+<details>
+<summary><b>Input Resize</b></summary>
+- To downsize input images:
+```
+python main.py --data-dir ~/datasets/ --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20
+```
 
 - To downsize every other epoch
 ```
-python main.py --data-dir ~/datasets/ --scale-input '{"size":[30,30]}' --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
+python main.py --data-dir ~/datasets/ --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
 ```
 </details>

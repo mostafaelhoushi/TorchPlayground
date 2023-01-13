@@ -55,7 +55,7 @@ parser.add_argument('--cp-decompose', default=None, type=json.loads, help='apply
 parser.add_argument('--convup', default=None, type=json.loads, help='convert conv2d to convup, pass argument as dict of arguments')
 parser.add_argument('--strideout', default=None, type=json.loads, help='add strideout to convolution, pass argument as dict of arguments')
 
-parser.add_argument('--scale-input', default=None, type=json.loads, help='scale the input samples, pass argument as dict of arguments')
+parser.add_argument('--resize-input', default=None, type=json.loads, help='resize the input samples, pass argument as dict of arguments')
 
 parser.add_argument('--layer-start', default=0, type=int, help='index of layer to start the conversion')
 parser.add_argument('--layer-end', default=-1, type=int, help='index of layer to stop the conversion')
