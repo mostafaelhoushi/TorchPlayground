@@ -27,7 +27,8 @@ import torch.utils.data
 import torch.utils.data.distributed
 from torch.autograd import Variable
 
-from convert import convert, register_forward_hook
+from convert import transform_model, convert, register_forward_hook
+from data_transforms import transform_data
 
 
 parser = argparse.ArgumentParser(description='Effect of stride testing on Imagenet')
@@ -215,52 +216,11 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.conversion_epochs is None:
         args.conversion_epochs = range(args.conversion_epoch_start, args.conversion_epoch_end+1, args.conversion_epoch_step)
 
-    # apply conversions
-    if args.prune:
-        prune = importlib.import_module(f"conversions.prune")
-        model, _ = convert(model, torch.nn.Linear, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
-        model, _ = convert(model, torch.nn.Conv2d, prune.convert, index_start=args.layer_start, index_end=args.layer_end, **args.prune)
-    if args.global_prune:
-        global_prune = importlib.import_module(f"conversions.global_prune")
-        model = global_prune.convert(model, (torch.nn.Linear, torch.nn.Conv2d), index_start=args.layer_start, index_end=args.layer_end, **args.global_prune)
+    # apply model transformations
+    model = transform_model(model, args)
 
-    if args.svd_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Linear, tensor_decomposition.svd_decompose_linear, index_start=args.layer_start, index_end=args.layer_end, **args.svd_decompose)
-    if args.channel_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.channel_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.channel_decompose)
-    if args.spatial_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.spatial_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.spatial_decompose)
-    if args.depthwise_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.depthwise_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.depthwise_decompose)
-    if args.tucker_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.tucker_decompose_conv, index_start=args.layer_start, index_end=args.layer_end, **args.tucker_decompose)
-    if args.cp_decompose:
-        tensor_decomposition = importlib.import_module(f"conversions.tensor_decomposition")
-        model, _ = convert(model, torch.nn.Conv2d, tensor_decomposition.cp_decompose_conv_other, index_start=args.layer_start, index_end=args.layer_end, **args.cp_decompose)
-
-    if args.apot:
-        apot = importlib.import_module(f"conversions.apot")
-        model, _ = convert(model, torch.nn.Conv2d, apot.convert, index_start=args.layer_start, index_end=args.layer_end, **args.apot)
-    if args.haq:
-        haq = importlib.import_module(f"conversions.haq")
-        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), haq.convert, index_start=args.layer_start, index_end=args.layer_end, **args.haq)
-    if args.deepshift:
-        deepshift = importlib.import_module(f"conversions.deepshift")
-        model, _ = convert(model, (torch.nn.Conv2d, torch.nn.Linear), deepshift.convert_to_shift.convert, index_start=args.layer_start, index_end=args.layer_end, **args.deepshift)
-
-    if args.convup:
-        convup = importlib.import_module(f"conversions.convup")
-        model, _ = convert(model, torch.nn.Conv2d, convup.ConvUp, index_start=args.layer_start, index_end=args.layer_end, **args.convup)
-    if args.strideout:
-        strideout = importlib.import_module(f"conversions.strideout")
-        model, _ = convert(model, torch.nn.Conv2d, strideout.StrideOut, index_start=args.layer_start, index_end=args.layer_end, **args.strideout)
-    ## todo: add dilate instead of convup
-
+    # apply hooks
+    # TODO: support more hooks and create separate function to encapsulate different hooks
     if args.dump_mean:
         register_forward_hook(model, print_mean)
 
@@ -429,19 +389,13 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         # measure data loading time
         data_time.update(time.time() - end)
         batch = task.to_device(batch, device, args.gpu)
+
+        # perform data transformations
+        if epoch in args.conversion_epochs:
+            batch = transform_data(batch, args)
+
         input, target = batch
-        batch_size = task.get_batch_size(batch) 
-        # optional: scale input
-        # todo: clean this up and make it more generic
-        # todo: perhaps add args.process_input or add this as a transformation
-        if args.scale_input:
-            if epoch in args.conversion_epochs:
-                # input = torch.nn.functional.interpolate(input, **args.scale_input)
-                import torchvision
-                extra_transforms = torchvision.transforms.Compose([
-                    torchvision.transforms.Resize((0,0))
-                ])
-                input = extra_transforms(input)
+        batch_size = task.get_batch_size(batch)
 
         # compute output
         output = model(input)
