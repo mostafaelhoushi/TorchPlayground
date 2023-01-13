@@ -432,9 +432,13 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         # todo: clean this up and make it more generic
         # todo: perhaps add args.process_input or add this as a transformation
         if args.scale_input:
-            if epoch in args.conversion_epochs:
-                (images, _) = batch
-                images = torch.nn.functional.interpolate(images, **args.scale_input)
+            if True: # epoch in args.conversion_epochs:
+                # input = torch.nn.functional.interpolate(input, **args.scale_input)
+                import torchvision
+                extra_transforms = torchvision.transforms.Compose([
+                    torchvision.transforms.Resize((0,0))
+                ])
+                input = extra_transforms(input)
 
         # compute output
         output = model(input)
