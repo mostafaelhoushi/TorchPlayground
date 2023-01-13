@@ -203,7 +203,15 @@ def main_worker(gpu, ngpus_per_node, args):
         print("=> creating model '{}'".format(args.arch))
         model = task.models.__dict__[args.arch]()
 
+    # set epochs
+    if args.epochs is not None:
+        epochs = args.epochs
+    else:
+        epochs = task.default_epochs()
+
     # create epoch range
+    if args.conversion_epoch_end < 0:
+        args.conversion_epoch_end += epochs
     if args.conversion_epochs is None:
         args.conversion_epochs = range(args.conversion_epoch_start, args.conversion_epoch_end+1, args.conversion_epoch_step)
 
@@ -322,11 +330,6 @@ def main_worker(gpu, ngpus_per_node, args):
         num_workers=args.workers, pin_memory=True)
 
     # training hyperparams
-    if args.epochs is not None:
-        epochs = args.epochs
-    else:
-        epochs = task.default_epochs()
-
     if args.lr is not None:
         initial_lr = args.lr
     else:
@@ -432,7 +435,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         # todo: clean this up and make it more generic
         # todo: perhaps add args.process_input or add this as a transformation
         if args.scale_input:
-            if True: # epoch in args.conversion_epochs:
+            if epoch in args.conversion_epochs:
                 # input = torch.nn.functional.interpolate(input, **args.scale_input)
                 import torchvision
                 extra_transforms = torchvision.transforms.Compose([
