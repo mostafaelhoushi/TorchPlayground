@@ -10,9 +10,9 @@ pip install -r requirements.txt
 ```
 python main.py --task <imagenet | cifar10 | mnist> --arch <model>
             [--train | --infer <sample path> | --evaluate]
-            --<conversion> '{<conversion parameters>}'
+            --<transform> '{<transform parameters>}'
                 [--layer-start <num>] [--layer-end <num>]
-                [--conversion-epoch-start <num>] [--conversion-epoch-end <num>] [--conversion-epoch-step <num>]
+                [--transform-epoch-start <num>] [--transform-epoch-end <num>] [--transform-epoch-step <num>]
             [--epochs <num>] [--batch-size <num>] [--momentum <num>] [--optimizer <opt>] [--pretrained <true | false>]
             [--lr <num>] [--lr-schedule <scheduler>] [--lr-step-size <num>] [--lr-milestones <nums>]
             [--cpu | --gpu <gpu-id>]
@@ -106,11 +106,11 @@ python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
 <summary><b>Input Resize</b></summary>
 - To downsize input images:
 ```
-python main.py --data-dir ~/datasets/ --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20
+python main.py --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20
 ```
 
 - To downsize every other epoch
 ```
-python main.py --data-dir ~/datasets/ --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20 --conversion-epoch-start 0 --conversion-epoch-end 200 --conversion-epoch-step 2
+python main.py --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20 --transform-epoch-start 0 --transform-epoch-end 200 --transform-epoch-step 2
 ```
 </details>

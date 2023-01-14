@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import traceback
 from collections import OrderedDict
-import conversions.tensor_decomposition.VBMF as VBMF
+import model_transforms.tensor_decomposition.VBMF as VBMF
 
 tl.set_backend("pytorch")
 

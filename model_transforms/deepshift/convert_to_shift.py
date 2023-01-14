@@ -4,25 +4,25 @@ import numpy as np
 import math
 import copy
 
-import conversions.deepshift.modules_ps
-import conversions.deepshift.modules_q
-import conversions.deepshift.utils as utils
+import model_transforms.deepshift.modules_ps
+import model_transforms.deepshift.modules_q
+import model_transforms.deepshift.utils as utils
 
 def convert(module, shift_type='PS', **kwargs):
     assert shift_type in ['PS', 'Q']
     if isinstance(module, torch.nn.Conv2d):
         if shift_type == 'Q':
-            quant_module = conversions.deepshift.modules_q.Conv2dShiftQ(module.in_channels, module.out_channels, module.kernel_size, module.stride, module.padding, module.dilation, module.groups, module.bias is not None,
+            quant_module = model_transforms.deepshift.modules_q.Conv2dShiftQ(module.in_channels, module.out_channels, module.kernel_size, module.stride, module.padding, module.dilation, module.groups, module.bias is not None,
                                                                         **kwargs)
         elif shift_type == 'PS':
-            quant_module = conversions.deepshift.modules_ps.Conv2dShift(module.in_channels, module.out_channels, module.kernel_size, module.stride, module.padding, module.dilation, module.groups, module.bias is not None,
+            quant_module = model_transforms.deepshift.modules_ps.Conv2dShift(module.in_channels, module.out_channels, module.kernel_size, module.stride, module.padding, module.dilation, module.groups, module.bias is not None,
                                                                        **kwargs)
     elif isinstance(module, torch.nn.Linear):
         if shift_type == 'Q':
             quant_module = converions.deepshift.modules_q.LinearShiftQ(module.in_features, module.out_features, module.bias is not None,
                                                                        **kwargs)
         elif shift_type == 'PS':
-            quant_module = conversions.deepshift.modules_ps.LinearShift(module.in_features, module.out_features, module.bias is not None,
+            quant_module = model_transforms.deepshift.modules_ps.LinearShift(module.in_features, module.out_features, module.bias is not None,
                                                                        **kwargs)
 
     quant_module.bias = module.bias
