@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import math
 
-import conversions.deepshift.kernels
+import model_transforms.deepshift.kernels
 
 def round_to_fixed(input, fraction=16, integer=16): 
     assert integer >= 1, integer 

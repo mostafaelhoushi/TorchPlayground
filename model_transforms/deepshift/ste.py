@@ -1,6 +1,6 @@
 import torch
 from torch.autograd import Function
-import conversions.deepshift.utils as utils
+import model_transforms.deepshift.utils as utils
 
 class RoundPowerOf2(Function):
     @staticmethod 

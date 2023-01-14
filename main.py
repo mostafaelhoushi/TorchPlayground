@@ -27,8 +27,8 @@ import torch.utils.data
 import torch.utils.data.distributed
 from torch.autograd import Variable
 
-from convert import transform_model, convert, register_forward_hook
-from data_transforms import transform_data
+from transform_model import transform_model, register_forward_hook
+from transform_data import transform_data
 
 
 parser = argparse.ArgumentParser(description='Effect of stride testing on Imagenet')
@@ -57,14 +57,14 @@ parser.add_argument('--strideout', default=None, type=json.loads, help='add stri
 
 parser.add_argument('--resize-input', default=None, type=json.loads, help='resize the input samples, pass argument as dict of arguments')
 
-parser.add_argument('--layer-start', default=0, type=int, help='index of layer to start the conversion')
-parser.add_argument('--layer-end', default=-1, type=int, help='index of layer to stop the conversion')
+parser.add_argument('--layer-start', default=0, type=int, help='index of layer to start the transform')
+parser.add_argument('--layer-end', default=-1, type=int, help='index of layer to stop the transform')
 
-parser.add_argument('--conversion-epoch-start', default=0, type=int, help='first epoch to apply conversion to')
-parser.add_argument('--conversion-epoch-end', default=-1, type=int, help='last epoch to apply conversion to')
-parser.add_argument('--conversion-epoch-step', default=1, type=int, help='epochs to skip when applying conversion')
-# TODO: make --conversion-epochs be mutually exclusive the --conversion-epoch-start/end/step
-parser.add_argument('--conversion-epochs', default=None, type=int, nargs='+', help='custom list of epochs to apply conversion to')
+parser.add_argument('--transform-epoch-start', default=0, type=int, help='first epoch to apply transform to')
+parser.add_argument('--transform-epoch-end', default=-1, type=int, help='last epoch to apply transform to')
+parser.add_argument('--transform-epoch-step', default=1, type=int, help='epochs to skip when applying transform')
+# TODO: make --transform-epochs be mutually exclusive the --transform-epoch-start/end/step
+parser.add_argument('--transform-epochs', default=None, type=int, nargs='+', help='custom list of epochs to apply transform to')
 
 # TODO: make --image and --data mutually exclusive
 parser.add_argument('-i', '--image', help='path to image')
@@ -198,8 +198,12 @@ def main_worker(gpu, ngpus_per_node, args):
     # create model
     if args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
-        # todo: pretrained could be name of weights, e.g., bert-case, bert-uncase, etc.
-        model = task.models.__dict__[args.arch](pretrained=True)
+        # TODO: pretrained could be name of weights, e.g., bert-case, bert-uncase, etc.
+        # TODO: refactor this code so that we load default weights inside tasks?
+        if args.task == "imagenet":
+            model = task.models.__dict__[args.arch](weights="IMAGENET1K_V1" if args.pretrained else None)
+        else:
+            model = task.models.__dict__[args.arch](pretrained=True)
     else:
         print("=> creating model '{}'".format(args.arch))
         model = task.models.__dict__[args.arch]()
@@ -211,10 +215,10 @@ def main_worker(gpu, ngpus_per_node, args):
         epochs = task.default_epochs()
 
     # create epoch range
-    if args.conversion_epoch_end < 0:
-        args.conversion_epoch_end += epochs
-    if args.conversion_epochs is None:
-        args.conversion_epochs = range(args.conversion_epoch_start, args.conversion_epoch_end+1, args.conversion_epoch_step)
+    if args.transform_epoch_end < 0:
+        args.transform_epoch_end += epochs
+    if args.transform_epochs is None:
+        args.transform_epochs = range(args.transform_epoch_start, args.transform_epoch_end+1, args.transform_epoch_step)
 
     # apply model transformations
     model = transform_model(model, args)
@@ -391,7 +395,7 @@ def train(train_loader, task, model, loss_fn, metrics_fn, optimizer, epoch, devi
         batch = task.to_device(batch, device, args.gpu)
 
         # perform data transformations
-        if epoch in args.conversion_epochs:
+        if epoch in args.transform_epochs:
             batch = transform_data(batch, args)
 
         input, target = batch
