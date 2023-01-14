@@ -21,6 +21,7 @@ python main.py --task <imagenet | cifar10 | mnist> --arch <model>
 There are more options that can be listed by running `python main.py --help`
 
 # Without Transformations
+
 - To infer image:
 ```
 python main.py --task cifar10 -i grumpy.jpg
@@ -44,6 +45,7 @@ python main.py --data-dir <path to imagenet>
 # With Model Transformations
 <details>
 <summary><b>Quantization</b></summary>
+
 - To convert convolution to APoT 5-bit quantized convolution:
 ```
 python main.py -i grumpy.jpg --apot '{"bit": 5}'
@@ -81,6 +83,7 @@ python main.py --task cifar10 --epochs 200 --global-prune '{"amount": 0.9, "prun
 
 <details>
 <summary><b>Tensor Decomposition</b></summary>
+
 - To perform Tucker decomposition
 ```
 python main.py --data-dir ~/datasets/imagenet --tucker-decompose '{"ranks":[20,20]}' --task imagenet --pretrained True --arch resnet18 --layer-start 1
@@ -94,6 +97,7 @@ python main.py --data-dir ~/datasets/imagenet --depthwise-decompose '{"threshold
 
 <details>
 <summary><b>Other</b></summary>
+
 - To increase stride of convolution and upsample
 ```
 python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
@@ -104,6 +108,7 @@ python main.py -i grumpy.jpg --convup '{"scale": 2, "mode": "bilinear"}'
 
 <details>
 <summary><b>Input Resize</b></summary>
+
 - To downsize input images:
 ```
 python main.py --resize-input '{"size":[15,15]}' --task cifar10 --pretrained False --arch resnet20
